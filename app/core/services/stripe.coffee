@@ -1,7 +1,9 @@
 publishableKey = if application.isProduction() then 'pk_live_27jQZozjDGN1HSUTnSuM578g' else 'pk_test_zG5UwVu6Ww8YhtE9ZYh0JO6a'
 
-if me.isAnonymous() and not application.testing
-  module.exports = {}
+if me.isAnonymous()
+  module.exports = {
+    openAsync: _.noop
+  }
 else if not StripeCheckout?
   module.exports = {}
   console.error "Failure loading StripeCheckout API, returning empty object."
