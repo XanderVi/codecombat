@@ -119,10 +119,10 @@ checkForCoupon = co.wrap (req, user, customer) ->
     couponID = user.get('stripe')?.couponID
     unless couponID or not user.get 'country'
       product = yield Product.findBasicSubscriptionForUser(user)
-      unless product.name is 'basic_subscription'
+      unless product.get('name') is 'basic_subscription'
         # We have a customized product for this country
         couponID = user.get 'country'
-    yield checkForExistingSubscription(req, user, customer, couponID)
+    yield module.exports.checkForExistingSubscription(req, user, customer, couponID)
 
 
 checkForExistingSubscription = co.wrap (req, user, customer, couponID) ->
@@ -255,10 +255,10 @@ purchaseProduct = expressWrap (req, res) ->
 
   yield req.user.save()
   try
-    msg = "#{req.user.get('email')} paid #{formatDollarValue(payment.get('amount')/100)} for year campaign subscription"
+    msg = "#{req.user.get('email')} paid #{formatDollarValue(payment.get('amount')/100)} for #{productName}"
     slack.sendSlackMessage msg, ['tower']
   catch error
-    SubscriptionHandler.logSubscriptionError(req.user, "Year sub sale Slack tower msg error: #{JSON.stringify(error)}")
+    SubscriptionHandler.logSubscriptionError(req.user, "#{productName} sale Slack tower msg error: #{JSON.stringify(error)}")
   res.send(req.user.toObject({req}))
 
   
@@ -352,4 +352,6 @@ module.exports = {
   unsubscribeUser
   unsubscribeRecipientEndpoint
   purchaseProduct
+  checkForCoupon
+  checkForExistingSubscription
 }
